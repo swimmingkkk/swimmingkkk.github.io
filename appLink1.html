@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <script>
+    function parse_query_string(query) {
+      var vars = query.split("&");
+      var query_string = {};
+      for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split("=");
+        var key = decodeURIComponent(pair[0]);
+        var value = decodeURIComponent(pair[1]);
+        // If first entry with this name
+        if (typeof query_string[key] === "undefined") {
+          query_string[key] = decodeURIComponent(value);
+          // If second entry with this name
+        } else if (typeof query_string[key] === "string") {
+          var arr = [query_string[key], decodeURIComponent(value)];
+          query_string[key] = arr;
+          // If third or later entry with this name
+        } else {
+          query_string[key].push(decodeURIComponent(value));
+        }
+      }
+      return query_string;
+    }
+
+    function getMobileOperatingSystem() {
+      var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      // Windows Phone must come first because its UA also contains "Android"
+      if (/windows phone/i.test(userAgent)) {
+        return "Windows Phone";
+      }
+      if (/android/i.test(userAgent)) {
+        return "Android";
+      }
+      // iOS detection from: http://stackoverflow.com/a/9039885/177710
+      if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+        return "iOS";
+      }
+      return "unknown";
+    }
+
+    function DetectAndServe() {
+      let os = getMobileOperatingSystem();
+      var query = window.location.search.substring(0);
+
+      var host = window.location.host;
+      var path = window.location.path;
+      if (os == "Android") {
+        var download_link = "https://play.google.com/store/apps/details?id=com.cht.ar.viewer";
+        window.location.href = download_link;
+      } else if (os == "iOS") {
+        let loc = getComposeAppURI().replace(/[<>;%+()[\]\n\r]+/ig,"");
+        window.location = encodeURI(loc);
+        setTimeout("window.location = 'itms-apps://itunes.apple.com/tw/app/facebook/id1451260387?mt=8';", 6000);
+      }
+    }
+
+
+    function DetectAndServe2() {
+      let projectType = getProjectType();
+      if (projectType === 'Image') {
+        showMenu();
+      } else {
+        openApp();
+      }
+    }
+    function openApp() {
+      let os = getMobileOperatingSystem();
+        if (os == "Android") {
+        let isInstall = isInstallARproForAndroid();
+        if (isInstall) {
+
+          var open_link = getComposeAndroidURI();
+          window.location.href = open_link;
+        } else { //not download
+          var download_link = "https://play.google.com/store/apps/details?id=com.cht.ar.viewer";
+          window.location.href = download_link;
+        }
+      } else if (os == "iOS") {
+        let loc = getComposeAppURI().replace(/[<>;%+()[\]\n\r]+/ig,"");
+        window.location = encodeURI(loc);
+        setTimeout("window.location = 'itms-apps://itunes.apple.com/tw/app/facebook/id1451260387?mt=8';", 6000);
+      }
+    }
+
+    function openWebARpro() {
+
+    }
+
+    function showMenu() {
+     var x = document.getElementById("manudiv");
+    if (x.style.display === "none") {
+      x.style.display = "block";
+    } else {
+      x.style.display = "none";
+    }
+  }
+    function isInstallARproForAndroid() {
+
+    }
+  </script>
+
+  <script>
+
+
+    function getProjectType() {
+      var query = window.location.search.substring(1);
+      query = decodeURIComponent(query).replace(/[<>;%+()[\]\n\r]+/ig,"");
+      var qs = parse_query_string(query);
+      var projectId = qs['projectId'];
+      var projectType = qs['projectType'];
+      return projectType;
+    }
+
+    function getComposeAppURI() {
+      var query = window.location.search.substring(1);
+      query = decodeURIComponent(query).replace(/[<>;%+()[\]\n\r]+/ig,"");
+
+      var qs = parse_query_string(query);
+      var projectId = qs['projectId'];
+      var projectType = qs['projectType'];
+      var output = "chtarapp://public?projectId=" + projectId + "&projectType=" + projectType;
+      // console.log(output);
+      return output;
+    }
+
+    function getComposeAndroidURI(){
+        var query = window.location.search.substring(1);
+        query = decodeURIComponent(query).replace(/[<>;%+()[\]\n\r]+/ig,"");
+
+        var qs = parse_query_string(query);
+        var projectId = qs['projectId'];
+        var projectType = qs['projectType'];
+        var output = "./appOpen.html?projectId=" + projectId + "&projectType=" + projectType;
+        return output;
+    }
+  </script>
+</head>
+
+<body onload="DetectAndServe2()">
+  <div class="btn-group" id="manudiv" style="display: none;">
+    <button type="button" class="btn btn-primary" onclick="openWebARpro()">用網頁打開</button>
+    <label>或是</label>
+    <button type="button" class="btn btn-primary " onclick="openApp()">用APP打開</button>
+  </div>
+</body>
+
+</html>
